@@ -2,7 +2,7 @@
 class Config {
     // Base de datos
     const DB_HOST = 'localhost';
-    const DB_USER = 'root';
+    const DB_USER = 'agroapp';
     const DB_PASS = '12345';
     const DB_NAME = 'agroconsejos';
     const DB_PORT = 3306;
