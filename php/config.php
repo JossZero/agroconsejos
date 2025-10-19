@@ -4,8 +4,8 @@ class Config {
     const DB_HOST = 'localhost';
     const DB_USER = 'root';
     const DB_PASS = '12345';
-    const DB_NAME = 'sistema_agricultura';
-    const DB_PORT = 3307;
+    const DB_NAME = 'agroconsejos';
+    const DB_PORT = 3306;
 
     
     // Encriptación
