@@ -13,7 +13,7 @@ class Conexion {
 
     public function __construct() {
         try {
-            $this->conn = new mysqli($this->host, $this->usuario, $this->password, $this->database, 3307);
+            $this->conn = new mysqli($this->host, $this->usuario, $this->password, $this->database, 3306);
 
             
             if ($this->conn->connect_error) {
