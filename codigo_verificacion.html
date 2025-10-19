@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Código - AgroConsejos</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+    <div class="container">
+        <div class="agricultura-header">
+            <h1>🌱 AgroConsejos</h1>
+            <p>Verificación de Código</p>
+        </div>
+
+        <div class="agricultura-tips">
+            <h3>📧 Código Enviado</h3>
+            <p>Hemos enviado un código de 6 dígitos a tu correo electrónico. Revise su bandeja de entrada.</p>
+        </div>
+
+        <form id="formVerificacion">
+            <div class="form-group">
+                <label for="codigo">Ingresa el código de 6 dígitos:</label>
+                <div class="codigo-container">
+                    <input type="text" id="codigo1" class="codigo-input" maxlength="1" required>
+                    <input type="text" id="codigo2" class="codigo-input" maxlength="1" required>
+                    <input type="text" id="codigo3" class="codigo-input" maxlength="1" required>
+                    <input type="text" id="codigo4" class="codigo-input" maxlength="1" required>
+                    <input type="text" id="codigo5" class="codigo-input" maxlength="1" required>
+                    <input type="text" id="codigo6" class="codigo-input" maxlength="1" required>
+                </div>
+                <div class="error-message" id="errorCodigo"></div>
+            </div>
+
+            <button type="submit" class="btn">✅ Verificar Código</button>
+        </form>
+
+        <div class="links">
+            <a href="#" id="reenviarCodigo">🔄 Reenviar código</a>
+            <a href="olvide_contrasena.html">↩️ Volver atrás</a>
+            <a href="login.html">🚪 Volver al Login</a>
+        </div>
+
+        <div id="mensajeVerificacion" class="success-message"></div>
+    </div>
+
+    <script src="js/verificacion.js"></script>
+</body>
+</html>

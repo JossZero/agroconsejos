@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroConsejos - Tu Asesor Agrícola</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        /* Estilos específicos para el index */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.9), rgba(76, 175, 80, 0.8)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%234caf50" width="1200" height="800"/><circle fill="%232e7d32" cx="200" cy="200" r="100"/><circle fill="%232e7d32" cx="800" cy="600" r="150"/></svg>');
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .hero-section h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-section p {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn-hero {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #2e7d32;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #2e7d32;
+            transform: translateY(-3px);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #4caf50;
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .agricultura-info {
+            background: #e8f5e8;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 50px 0;
+            border-left: 5px solid #4caf50;
+        }
+
+        .agricultura-info h2 {
+            color: #2e7d32;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .testimonials {
+            background: #f8f9fa;
+            padding: 50px 20px;
+            border-radius: 15px;
+            margin: 50px 0;
+        }
+
+        .testimonials h2 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 40px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #4caf50;
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .testimonial-author {
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2.5em;
+            }
+            
+            .hero-section p {
+                font-size: 1.1em;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-hero {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sección Hero -->
+        <section class="hero-section">
+            <h1>🌱 AgroConsejos</h1>
+            <p>Tu plataforma integral para una agricultura inteligente y sostenible. Conectamos agricultores con tecnología y conocimiento especializado.</p>
+            
+            <div class="cta-buttons">
+                <a href="registro.html" class="btn-hero btn-primary">🚀 Comenzar Ahora</a>
+                <a href="login.html" class="btn-hero btn-secondary">🔑 Iniciar Sesión</a>
+            </div>
+        </section>
+
+        <!-- Características Principales -->
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Monitoreo de Variables</h3>
+                <p>Registra y analiza temperatura, humedad, pH del suelo y más para optimizar tus cultivos.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">💡</div>
+                <h3>Consejos Personalizados</h3>
+                <p>Recibe recomendaciones específicas basadas en las condiciones de tu terreno y cultivos.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Comunidad Agrícola</h3>
+                <p>Comparte experiencias y aprende de otros agricultores en nuestra plataforma.</p>
+            </div>
+        </section>
+
+        <!-- Información Agrícola -->
+        <section class="agricultura-info">
+            <h2>🌾 La Importancia de la Gestión Agrícola Moderna</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>✅ Mayor Productividad</h4>
+                    <p>Técnicas comprobadas para incrementar el rendimiento de tus cultivos</p>
+                </div>
+                <div class="info-item">
+                    <h4>💧 Uso Eficiente del Agua</h4>
+                    <p>Optimiza el riego y reduce el consumo de recursos hídricos</p>
+                </div>
+                <div class="info-item">
+                    <h4>🌱 Sustentabilidad</h4>
+                    <p>Prácticas agrícolas que cuidan el medio ambiente</p>
+                </div>
+                <div class="info-item">
+                    <h4>📈 Rentabilidad</h4>
+                    <p>Mejora la rentabilidad de tu negocio agrícola</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Consejos del Día -->
+        <div class="agricultura-tips">
+            <h3>💡 Consejos del Día para Agricultores</h3>
+            <div class="consejo-item">
+                <strong>Riego Inteligente:</strong> Riega temprano en la mañana o al atardecer para reducir la evaporación del agua.
+            </div>
+            <div class="consejo-item">
+                <strong>Rotación de Cultivos:</strong> Alterna diferentes cultivos para mantener la fertilidad del suelo.
+            </div>
+            <div class="consejo-item">
+                <strong>Control Natural:</strong> Usa insectos benéficos para controlar plagas de manera natural.
+            </div>
+        </div>
+
+        <!-- Testimonios -->
+        <section class="testimonials">
+            <h2>🎙️ Lo que Dicen Nuestros Usuarios</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"Gracias a AgroConsejos aumenté mi producción de maíz en un 30%. Los consejos son muy prácticos y fáciles de implementar."</p>
+                    <p class="testimonial-author">- Juan Pérez, Agricultor</p>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"La comunidad es increíble. He aprendido técnicas que no conocía y he solucionado problemas que tenía hace años."</p>
+                    <p class="testimonial-author">- María González, Productora</p>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"El sistema de monitoreo me ayudó a detectar problemas de pH a tiempo. Salvé toda mi cosecha de tomate."</p>
+                    <p class="testimonial-author">- Carlos Rodríguez, Emprendedor Agrícola</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Llamada a la Acción Final -->
+        <div style="text-align: center; margin: 50px 0;">
+            <h2 style="color: #2e7d32; margin-bottom: 20px;">¿Listo para Transformar tu Agricultura?</h2>
+            <p style="font-size: 1.2em; margin-bottom: 30px; color: #666;">Únete a nuestra comunidad de agricultores exitosos</p>
+            <a href="registro.html" class="btn" style="font-size: 1.3em; padding: 15px 40px;">🌱 Comenzar Mi Experiencia</a>
+        </div>
+
+        <!-- Enlaces de Navegación -->
+        <div class="links" style="margin-top: 50px; border-top: 1px solid #e0e0e0; padding-top: 30px;">
+            <a href="registro.html">📝 Registrarse</a>
+            <a href="login.html">🔑 Iniciar Sesión</a>
+            <a href="olvide_contrasena.html">🔒 Recuperar Contraseña</a>
+        </div>
+    </div>
+
+    <script>
+        // Efectos interactivos simples
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animación suave al hacer scroll
+            const featureCards = document.querySelectorAll('.feature-card');
+            
+            featureCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

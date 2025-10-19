@@ -1,0 +1,12 @@
+[2025-10-12 10:27:22] Respaldo generado: agroconsejos_respaldo_2025-10-12_10-27-22.zip
+[2025-10-12 10:30:47] Respaldo generado: agroconsejos_respaldo_2025-10-12_10-30-46.zip
+[2025-10-13 16:51:46] Respaldo generado: agroconsejos_respaldo_2025-10-13_16-51-45.zip
+[2025-10-13 19:47:20] Respaldo generado: agroconsejos_respaldo_2025-10-13_19-47-19.zip
+[2025-10-15 19:12:33] Respaldo generado: agroconsejos_respaldo_2025-10-15_19-12-33.zip
+[2025-10-15 19:16:27] Respaldo generado: agroconsejos_respaldo_2025-10-15_19-16-26.zip
+[2025-10-15 19:16:27] ✅ Copia adicional en memoria USB: D:\RespaldoAgroconsejos\
+[2025-10-15 19:43:05] Respaldo generado: agroconsejos_respaldo_2025-10-15_19-43-05.zip
+[2025-10-15 19:43:05] ✅ Copia adicional en memoria USB: D:\RespaldoAgroconsejos\
+[2025-10-17 02:28:22] Base de datos restaurada desde: agroconsejos_respaldo_2025-10-15_19-16-26.zip
+[2025-10-17 19:11:23] Respaldo generado: agroconsejos_respaldo_2025-10-17_19-11-23.zip
+[2025-10-17 19:11:23] ✅ Copia adicional en memoria USB: D:\RespaldoAgroconsejos\

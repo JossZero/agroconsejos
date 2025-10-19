@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Contraseña - AgroConsejos</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+    <div class="container">
+        <div class="agricultura-header">
+            <h1>🌱 AgroConsejos</h1>
+            <p>Establecer Nueva Contraseña</p>
+        </div>
+
+        <div class="agricultura-tips">
+            <h3>🔒 Seguridad de la Cuenta</h3>
+            <p>Crea una contraseña segura que combines letras, números y caracteres especiales para proteger tu cuenta.</p>
+        </div>
+
+        <form id="formCambiarContrasena">
+            <div class="form-group">
+                <label for="nueva_contrasena">Nueva Contraseña *</label>
+                <div class="password-container">
+                    <input type="password" id="nueva_contrasena" name="nueva_contrasena" required>
+                    <span class="eye-icon" id="ojoContrasena">👁️</span>
+                </div>
+                <div class="error-message" id="errorContrasena"></div>
+                <small>Debe contener mayúsculas, minúsculas, números y caracteres especiales (mínimo 8 caracteres)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmar_contrasena">Confirmar Contraseña *</label>
+                <div class="password-container">
+                    <input type="password" id="confirmar_contrasena" name="confirmar_contrasena" required>
+                    <span class="eye-icon" id="ojoConfirmar">👁️</span>
+                </div>
+                <div class="error-message" id="errorConfirmar"></div>
+            </div>
+
+            <button type="submit" class="btn">🔄 Cambiar Contraseña</button>
+        </form>
+
+        <div class="links">
+            <a href="login.html">↩️ Volver al Login</a>
+            <a href="index.html">🏠 Volver al Inicio</a>
+        </div>
+
+        <div id="mensajeCambio" class="success-message"></div>
+    </div>
+
+    <script src="js/cambiar_contrasena.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - AgroConsejos</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>🌱 Panel de Administración</h1>
+            <div class="user-info">
+                <span id="adminNombre">Administrador</span>
+                <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <ul>
+                <li><a href="#usuarios" class="nav-link active">👥 Gestión de Usuarios</a></li>
+                <li><a href="#bitacora" class="nav-link">📊 Bitácora de Accesos</a></li>
+                <li><a href="#respaldo" class="nav-link">💾 Respaldo de BD</a></li>
+                <li><a href="#estadisticas" class="nav-link">📈 Estadísticas</a></li>
+            </ul>
+        </nav>
+
+        <main class="admin-main">
+            <!-- Sección Usuarios -->
+            <section id="usuarios" class="admin-section active">
+                <h2>👥 Gestión de Usuarios</h2>
+                <div class="table-container">
+                    <table id="tablaUsuarios">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Contraseña</th>
+                                <th>Rol</th>
+                                <th>Fecha Registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaUsuarios">
+                            <!-- Los usuarios se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Bitácora -->
+            <section id="bitacora" class="admin-section">
+                <h2>📊 Bitácora de Accesos</h2>
+                <div class="filtros">
+                    <input type="date" id="fechaInicio" class="filtro-fecha">
+                    <input type="date" id="fechaFin" class="filtro-fecha">
+                    <button id="btnFiltrar" class="btn-filtrar">Filtrar</button>
+                    <button id="btnExportar" class="btn-exportar" style="display:none;">Exportar CSV</button>
+                </div>
+                <div class="table-container">
+                    <table id="tablaBitacora">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Fecha Entrada</th>
+                                <th>Fecha Salida</th>
+                                <th>Tiempo Sesión</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaBitacora">
+                            <!-- Los registros se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Respaldo -->
+            <section id="respaldo" class="admin-section">
+                <h2>💾 Respaldo y Recuperación de Base de Datos</h2>
+                
+                <div class="backup-actions">
+                    <button id="btnRespaldo" class="btn-backup">🔄 Generar Respaldo</button>
+                    <button id="btnRestaurar" class="btn-restore">📥 Restaurar Respaldo</button>
+                    <button id="btnListarRespaldos" class="btn-listar "style="display:none;">📋 Ver Respaldos</button>
+                </div>
+
+                <div id="progresoRespaldo" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="barraProgreso"></div>
+                    </div>
+                    <span id="porcentajeProgreso">0%</span>
+                </div>
+
+                <div id="listaRespaldos" class="backup-list">
+                    <!-- Lista de respaldos se carga aquí -->
+                </div>
+
+                <div id="mensajeRespaldo" class="message-container"></div>
+            </section>
+
+            <!-- Sección Estadísticas -->
+            <section id="estadisticas" class="admin-section">
+                <h2>📈 Estadísticas del Sistema</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>👥 Total Usuarios</h3>
+                        <div class="stat-number" id="totalUsuarios">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>🌱 Variables Agrícolas</h3>
+                        <div class="stat-number" id="totalVariables">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>📝 Entradas Blog</h3>
+                        <div class="stat-number" id="totalBlogs">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>📊 Sesiones Hoy</h3>
+                        <div class="stat-number" id="sesionesHoy">0</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para editar usuario -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>✏️ Editar Usuario</h3>
+            <form id="formEditarUsuario">
+                <input type="hidden" id="editarId">
+                <div class="form-group">
+                    <label for="editarNombre">Nombre</label>
+                    <input type="text" id="editarNombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="editarCorreo">Correo</label>
+                    <input type="email" id="editarCorreo" required>
+                </div>
+                <div class="form-group">
+                    <label for="editarTelefono">Teléfono</label>
+                    <input type="text" id="editarTelefono" required maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label for="editarContrasena">Contraseña (dejar vacío para no cambiar)</label>
+                    <input type="text" id="editarContrasena">
+                </div>
+                <div class="form-group">
+                    <label for="editarRol">Rol</label>
+                    <select id="editarRol" required>
+                        <option value="usuario">Usuario</option>
+                        <option value="administrador">Administrador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">💾 Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para restaurar respaldo -->
+    <div id="modalRestaurar" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📥 Restaurar Base de Datos</h3>
+            <div id="contenidoRestaurar">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

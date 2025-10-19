@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Usuario - AgroConsejos</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        /* ======== Estilos del Reporte ======== */
+        #modalReporte {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        #modalReporte .modal-content {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px 40px;
+            margin: auto;
+            font-family: "Poppins", sans-serif;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            max-width: 800px;
+        }
+
+        #modalReporte h3 {
+            text-align: center;
+            color: #1a5e2a;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        /* Encabezado del reporte */
+        .reporte-header {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 10px;
+        }
+
+        .reporte-header h2 {
+            color: #2e7d32;
+            margin: 0;
+        }
+
+        .reporte-header p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Tabla de variables */
+        .reporte-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .reporte-tabla th {
+            background-color: #f5f5f5;
+            color: #1a5e2a;
+            text-align: left;
+            padding: 10px 15px;
+            font-weight: bold;
+        }
+
+        .reporte-tabla td {
+            padding: 8px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Recomendaciones */
+        .reporte-recomendaciones {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 15px;
+        }
+
+        .reporte-recomendaciones strong {
+            color: #2e7d32;
+        }
+
+        /* Plan de acción */
+        .reporte-plan {
+            background: #f1f8e9;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 5px solid #8bc34a;
+            font-size: 15px;
+        }
+
+        .reporte-plan ul {
+            margin: 10px 0 0 25px;
+        }
+
+        /* Botones */
+        .report-actions {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .report-actions .btn {
+            margin: 5px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>🌱 AgroConsejos - Panel de Usuario</h1>
+            <div class="user-info">
+                <span id="usuarioNombre">Bienvenido</span>
+                <button id="btnLogoutUsuario" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <ul>
+                <li><a href="#inicio" class="nav-link active">🏠 Inicio</a></li>
+                <li><a href="#variables" class="nav-link">📊 Variables Agrícolas</a></li>
+                <li style="display: none;"><a href="#consejos" class="nav-link">💡 Consejos</a></li>
+                <li><a href="#blog" class="nav-link">📝 Blog Comunitario</a></li>
+                <li><a href="#perfil" class="nav-link">👤 Mi Perfil</a></li>
+            </ul>
+        </nav>
+
+        <main class="admin-main">
+            <!-- Sección Inicio -->
+            <section id="inicio" class="admin-section active">
+                <div class="welcome-section">
+                    <h2>¡Bienvenido, <span id="nombreUsuario">Usuario</span>! 👋</h2>
+                    <div class="welcome-content">
+                        <div class="welcome-text">
+                            <h3>🌾 Comienza tu Experiencia en AgroConsejos</h3>
+                            <p>Te damos la bienvenida a nuestra plataforma de agricultura inteligente. Aquí podrás:</p>
+                            <ul>
+                                <li>📊 Registrar variables de tus cultivos</li>
+                                <li>💡 Recibir consejos personalizados</li>
+                                <li>📝 Compartir experiencias con otros agricultores</li>
+                                <li>📄 Generar reportes de decisiones</li>
+                            </ul>
+                            <button id="btnComenzar" class="btn btn-primary">🚀 ¿Cómo Comenzar?</button>
+                        </div>
+                        <div class="welcome-image">
+                            <div class="agricultura-tips">
+                                <h3>🌱 Importancia de la Gestión Agrícola</h3>
+                                <p>La correcta gestión agrícola es fundamental para:</p>
+                                <ul>
+                                    <li>✅ Maximizar el rendimiento de cultivos</li>
+                                    <li>✅ Optimizar el uso de recursos naturales</li>
+                                    <li>✅ Reducir el impacto ambiental</li>
+                                    <li>✅ Mejorar la calidad de los productos</li>
+                                    <li>✅ Aumentar la rentabilidad del negocio</li>
+                                </ul>
+                                <p><strong>¡Tu éxito agrícola comienza con una buena gestión!</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="introduccion" class="introduccion-section" style="display: none;">
+                    <h3>📚 Introducción a los AgroConsejos</h3>
+                    <div class="intro-steps">
+                        <div class="intro-step">
+                            <h4>1. 📊 Registra tus Variables</h4>
+                            <p>Comienza registrando las condiciones de tu cultivo: temperatura, humedad, pH del suelo, etc.</p>
+                        </div>
+                        <div class="intro-step">
+                            <h4>2. 💡 Recibe Consejos</h4>
+                            <p>Nuestro sistema analizará tus datos y te dará recomendaciones específicas.</p>
+                        </div>
+                        <div class="intro-step">
+                            <h4>3. 📝 Comparte Experiencias</h4>
+                            <p>Únete a la comunidad y comparte tus éxitos y aprendizajes.</p>
+                        </div>
+                        <div class="intro-step">
+                            <h4>4. 📄 Genera Reportes</h4>
+                            <p>Crea reportes detallados para tomar mejores decisiones.</p>
+                        </div>
+                    </div>
+                    <button id="btnCerrarIntro" class="btn btn-secondary">Cerrar Introducción</button>
+                </div>
+            </section>
+
+            <!-- Sección Variables Agrícolas -->
+            <section id="variables" class="admin-section">
+                <h2>📊 Registro de Variables Agrícolas</h2>
+                <form id="formVariables" class="variables-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="temperatura">🌡️ Temperatura (°C)</label>
+                            <input type="number" id="temperatura" name="temperatura" step="0.1" min="-10" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="humedad">💧 Humedad (%)</label>
+                            <input type="number" id="humedad" name="humedad" step="0.1" min="0" max="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="radiacion">☀️ Radiación (W/m²)</label>
+                            <input type="number" id="radiacion" name="radiacion" step="0.1" min="0" max="2000">
+                        </div>
+                        <div class="form-group">
+                            <label for="precipitacion">🌧️ Precipitación (mm)</label>
+                            <input type="number" id="precipitacion" name="precipitacion" step="0.1" min="0" max="500">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ph_suelo">🧪 pH del Suelo</label>
+                            <input type="number" id="ph_suelo" name="ph_suelo" step="0.1" min="0" max="14">
+                        </div>
+                        <div class="form-group">
+                            <label for="fertilidad">🌿 Fertilidad</label>
+                            <select id="fertilidad" name="fertilidad">
+                                <option value="">Seleccionar...</option>
+                                <option value="baja">Baja</option>
+                                <option value="media">Media</option>
+                                <option value="alta">Alta</option>
+                                <option value="muy_alta">Muy Alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nutrientes">🥦 Nutrientes Principales</label>
+                        <textarea id="nutrientes" name="nutrientes" placeholder="Ej: Nitrógeno, Fósforo, Potasio..." rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="calidad_agua">💦 Calidad del Agua</label>
+                        <select id="calidad_agua" name="calidad_agua">
+                            <option value="">Seleccionar...</option>
+                            <option value="excelente">Excelente</option>
+                            <option value="buena">Buena</option>
+                            <option value="regular">Regular</option>
+                            <option value="mala">Mala</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">💾 Guardar Variables</button>
+                    <button type="button" id="btnGenerarConsejos" class="btn btn-primary">💡 Obtener Consejos</button>
+                </form>
+
+                <div id="consejosAutomaticos" class="consejos-section" style="display: none;">
+                    <h3>💡 Consejos Basados en tus Variables</h3>
+                    <div id="listaConsejos"></div>
+                    <button id="btnGenerarReporte" class="btn btn-success">📄 Generar Reporte de Decisiones</button>
+                </div>
+            </section>
+
+            <!-- Sección Blog Comunitario -->
+            <section id="blog" class="admin-section">
+                <h2>📝 Blog Comunitario</h2>
+                <div class="blog-actions">
+                    <button id="btnNuevaEntrada" class="btn btn-primary">✏️ Nueva Entrada</button>
+                </div>
+
+                <div id="formNuevaEntrada" class="blog-form" style="display: none;">
+                    <h3>Nueva Entrada al Blog</h3>
+                    <form id="formBlog">
+                        <div class="form-group">
+                            <label for="tituloBlog">Título</label>
+                            <input type="text" id="tituloBlog" name="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contenidoBlog">Contenido</label>
+                            <textarea id="contenidoBlog" name="contenido" rows="6" required placeholder="Comparte tu experiencia, tips o preguntas..."></textarea>
+                        </div>
+                        <button type="submit" class="btn">📤 Publicar Entrada</button>
+                        <button type="button" id="btnCancelarEntrada" class="btn btn-secondary">❌ Cancelar</button>
+                    </form>
+                </div>
+
+                <div id="listaEntradasBlog" class="blog-list">
+                    <!-- Entradas del blog -->
+                </div>
+            </section>
+
+            <!-- Sección Perfil -->
+            <section id="perfil" class="admin-section">
+                <h2>👤 Mi Perfil</h2>
+                <div class="profile-info">
+                    <div class="profile-card">
+                        <h3>Información Personal</h3>
+                        <div id="infoUsuario"></div>
+                        <button id="btnEditarPerfil" class="btn" style="display: none;">✏️ Editar Perfil</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Reporte -->
+    <div id="modalReporte" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📄 Reporte de Decisiones Agrícolas</h3>
+            <div id="contenidoReporte">
+                <!-- Contenido del reporte generado -->
+            </div>
+            <div class="report-actions">
+                <button id="btnImprimirReporte" class="btn">🖨️ Imprimir</button>
+                <button id="btnDescargarPDF" class="btn" style="display: none;">📥 Descargar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/usuario.js"></script>
+</body>
+</html>
