@@ -35,8 +35,8 @@ $config = [
     'usuario' => 'agroapp',
     'password' => '12345',
     'database' => 'agroconsejos',
-    'ruta_mysqldump' => '/usr/bin/mysqldump', // Linux
-    'ruta_mysql' => '/usr/bin/mysql'          // Linux
+    'ruta_mysqldump' => '/usr/bin/mysqldump', // Linux, cambiar para Windows
+    'ruta_mysql' => '/usr/bin/mysql'          // Linux, cambiar para Windows
 ];
 
 $conexion = new Conexion();
@@ -112,6 +112,7 @@ function generarRespaldo($config) {
 
     exec($comando, $output, $returnCode);
 
+    // 🔹 MOSTRAR ERROR DE mysqldump SI FALLA
     if ($returnCode !== 0) {
         echo json_encode([
             'success' => false,
