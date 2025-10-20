@@ -28,11 +28,10 @@ class Config {
 
     // Detecta automáticamente el sistema operativo y asigna la ruta correcta de mysqldump
     public static function getMysqldumpPath() {
-        if (stripos(PHP_OS, 'WIN') === 0) {
-            // Entorno Windows (desarrollo local)
+        $os = strtoupper(substr(PHP_OS, 0, 3));
+        if ($os === 'WIN') {
             return 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
         } else {
-            // Entorno Linux / Raspberry Pi
             return '/usr/bin/mysqldump';
         }
     }
@@ -45,33 +44,29 @@ class Config {
 // --- Funciones del sistema ---
 function verificarRequisitosSistema() {
     $errores = [];
-    
-    // Extensiones PHP requeridas
+
     $extensiones_requeridas = ['mysqli', 'openssl', 'zip', 'json'];
     foreach ($extensiones_requeridas as $ext) {
         if (!extension_loaded($ext)) {
             $errores[] = "Extensión PHP requerida: $ext";
         }
     }
-    
-    // Permisos de directorios
+
     if (!is_writable(Config::BACKUP_PATH)) {
         $errores[] = "El directorio de backups no tiene permisos de escritura.";
     }
     if (!is_writable(Config::TEMP_PATH)) {
         $errores[] = "El directorio temporal no tiene permisos de escritura.";
     }
-    
-    // Verificar que mysqldump exista
+
     $mysqldumpPath = Config::getMysqldumpPath();
     if (!file_exists($mysqldumpPath)) {
         $errores[] = "No se encontró mysqldump en la ruta esperada: $mysqldumpPath";
     }
-    
+
     return $errores;
 }
 
-// Información del sistema
 function obtenerInfoSistema() {
     return [
         'php_version' => PHP_VERSION,
