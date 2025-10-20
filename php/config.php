@@ -23,19 +23,19 @@ class Config {
     const TEMP_PATH = __DIR__ . '/../temp/';
     
     // --- Configuración de respaldos ---
-    // Detecta automáticamente el sistema operativo y asigna la ruta correcta
+    const MAX_BACKUP_SIZE = 500; // MB
+    const BACKUP_RETENTION_DAYS = 30; // Días para mantener respaldos
+
+    // Detecta automáticamente el sistema operativo y asigna la ruta correcta de mysqldump
     public static function getMysqldumpPath() {
         if (stripos(PHP_OS, 'WIN') === 0) {
-            // Entorno Windows (para desarrollo local)
+            // Entorno Windows (desarrollo local)
             return 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
         } else {
             // Entorno Linux / Raspberry Pi
             return '/usr/bin/mysqldump';
         }
     }
-
-    const MAX_BACKUP_SIZE = 500; // MB
-    const BACKUP_RETENTION_DAYS = 30; // Días para mantener respaldos
     
     // --- Seguridad ---
     const MAX_LOGIN_ATTEMPTS = 5;
