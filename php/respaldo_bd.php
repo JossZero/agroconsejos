@@ -7,15 +7,15 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
-$rutaConexion = _DIR_ . '/conexion.php';
+$rutaConexion = __DIR__ . '/conexion.php';
 if (!file_exists($rutaConexion)) {
     echo json_encode(['success' => false, 'message' => 'Error: Archivo de conexión no encontrado']);
     exit;
 }
 require_once $rutaConexion;
 
-if (file_exists(_DIR_ . '/config.php')) {
-    require_once _DIR_ . '/config.php';
+if (file_exists(__DIR__ . '/config.php')) {
+    require_once __DIR__ . '/config.php';
 }
 
 session_start();
@@ -35,8 +35,9 @@ $config = [
     'usuario' => 'agroapp',
     'password' => '12345',
     'database' => 'agroconsejos',
-    'ruta_mysqldump' => '/usr/bin/mysqldump', // Linux, cambiar para Windows
-    'ruta_mysql' => '/usr/bin/mysql'          // Linux, cambiar para Windows
+    // 🔹 Detectar automáticamente el binario correcto
+    'ruta_mysqldump' => file_exists('/usr/bin/mariadb-dump') ? '/usr/bin/mariadb-dump' : '/usr/bin/mysqldump',
+    'ruta_mysql' => '/usr/bin/mysql'
 ];
 
 $conexion = new Conexion();
@@ -81,7 +82,7 @@ function verificarMysqldump($config) {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'mysqldump no encontrado. Asegúrate de que MySQL esté instalado correctamente.',
+            'message' => 'mysqldump no encontrado. Asegúrate de que MySQL/MariaDB esté instalado correctamente.',
             'error' => implode(', ', $output)
         ]);
     }
@@ -93,14 +94,15 @@ function verificarMysqldump($config) {
 function generarRespaldo($config) {
     $fecha = date('Y-m-d_H-i-s');
     $nombreArchivo = "agroconsejos_respaldo_" . $fecha;
-    $directorioBackups = _DIR_ . "/backups/";
+    $directorioBackups = __DIR__ . "/backups/";
     $rutaSQL = $directorioBackups . $nombreArchivo . ".sql";
     $rutaZip = $directorioBackups . $nombreArchivo . ".zip";
 
     if (!is_dir($directorioBackups)) mkdir($directorioBackups, 0755, true);
 
+    // ✅ Usar --result-file en lugar de ">"
     $comando = sprintf(
-        '%s --user=%s --password=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert > %s 2>&1',
+        '%s --user=%s --password=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert --result-file=%s 2>&1',
         escapeshellcmd($config['ruta_mysqldump']),
         escapeshellarg($config['usuario']),
         escapeshellarg($config['password']),
@@ -112,7 +114,6 @@ function generarRespaldo($config) {
 
     exec($comando, $output, $returnCode);
 
-    // 🔹 MOSTRAR ERROR DE mysqldump SI FALLA
     if ($returnCode !== 0) {
         echo json_encode([
             'success' => false,
@@ -128,15 +129,12 @@ function generarRespaldo($config) {
             unlink($rutaSQL);
             registrarAccionBitacora("Respaldo generado: " . basename($rutaZip));
 
-            // 🔹 Enviar archivo al navegador para descarga
             header('Content-Type: application/zip');
             header('Content-Disposition: attachment; filename="' . basename($rutaZip) . '"');
             header('Content-Length: ' . filesize($rutaZip));
             readfile($rutaZip);
 
-            // 🔹 Opcional: borrar el ZIP después de enviarlo
             unlink($rutaZip);
-
             exit;
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al comprimir respaldo']);
@@ -171,7 +169,7 @@ function comprimirArchivo($archivoOrigen, $archivoDestino) {
 // 🔹 Funciones auxiliares
 // ====================================
 function listarRespaldos() {
-    $dir = _DIR_ . "/backups/";
+    $dir = __DIR__ . "/backups/";
     $archivos = glob($dir . "*.zip");
     $lista = [];
     foreach ($archivos as $archivo) {
@@ -202,13 +200,13 @@ function eliminarDirectorio($dir) {
 }
 
 function registrarAccionBitacora($accion) {
-    $log = _DIR_ . "/backups/bitacora.txt";
+    $log = __DIR__ . "/backups/bitacora.txt";
     file_put_contents($log,"[".date('Y-m-d H:i:s')."] $accion\n",FILE_APPEND);
 }
 
 function eliminarRespaldo() {
     if (!isset($_POST['archivo'])) { echo json_encode(['success'=>false,'message'=>'No se especificó archivo a eliminar']); return; }
-    $archivo = _DIR_."/backups/".basename($_POST['archivo']);
+    $archivo = __DIR__."/backups/".basename($_POST['archivo']);
     if (file_exists($archivo)) {
         unlink($archivo);
         registrarAccionBitacora("Respaldo eliminado: ".basename($archivo));
