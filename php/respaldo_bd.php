@@ -1,21 +1,21 @@
 <?php
 // ============================
-// 🌿 AGROCONSEJOS - RESPALDO BD
+// 🌿 AGROCONSEJOS - RESPALDO BD (Linux)
 // ============================
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
-$rutaConexion = __DIR__ . '/conexion.php';
+$rutaConexion = _DIR_ . '/conexion.php';
 if (!file_exists($rutaConexion)) {
     echo json_encode(['success' => false, 'message' => 'Error: Archivo de conexión no encontrado']);
     exit;
 }
 require_once $rutaConexion;
 
-if (file_exists(__DIR__ . '/config.php')) {
-    require_once __DIR__ . '/config.php';
+if (file_exists(_DIR_ . '/config.php')) {
+    require_once _DIR_ . '/config.php';
 }
 
 session_start();
@@ -35,7 +35,8 @@ $config = [
     'usuario' => 'agroapp',
     'password' => '12345',
     'database' => 'agroconsejos',
-    'ruta_mysqldump' => '/usr/bin/mysqldump'
+    'ruta_mysqldump' => '/usr/bin/mysqldump', // Linux
+    'ruta_mysql' => '/usr/bin/mysql'          // Linux
 ];
 
 $conexion = new Conexion();
@@ -64,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 // 🔹 Verificar mysqldump disponible
 // ====================================
 function verificarMysqldump($config) {
-    $comando = '"' . $config['ruta_mysqldump'] . '" --version 2>&1';
+    $comando = escapeshellcmd($config['ruta_mysqldump']) . " --version 2>&1";
     exec($comando, $output, $returnCode);
 
     if ($returnCode === 0) {
@@ -88,36 +89,22 @@ function verificarMysqldump($config) {
 function generarRespaldo($config) {
     $fecha = date('Y-m-d_H-i-s');
     $nombreArchivo = "agroconsejos_respaldo_" . $fecha;
-    $directorioBackups = __DIR__ . "/backups/";
+    $directorioBackups = _DIR_ . "/backups/";
     $rutaSQL = $directorioBackups . $nombreArchivo . ".sql";
     $rutaZip = $directorioBackups . $nombreArchivo . ".zip";
 
-    if (!is_dir($directorioBackups)) {
-        mkdir($directorioBackups, 0755, true);
-    }
+    if (!is_dir($directorioBackups)) mkdir($directorioBackups, 0755, true);
 
-    if (empty($config['password'])) {
-        $comando = sprintf(
-            '"%s" --user=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert > "%s" 2>&1',
-            $config['ruta_mysqldump'],
-            escapeshellarg($config['usuario']),
-            escapeshellarg($config['host']),
-            $config['port'],
-            escapeshellarg($config['database']),
-            $rutaSQL
-        );
-    } else {
-        $comando = sprintf(
-            '"%s" --user=%s --password=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert > "%s" 2>&1',
-            $config['ruta_mysqldump'],
-            escapeshellarg($config['usuario']),
-            escapeshellarg($config['password']),
-            escapeshellarg($config['host']),
-            $config['port'],
-            escapeshellarg($config['database']),
-            $rutaSQL
-        );
-    }
+    $comando = sprintf(
+        '%s --user=%s --password=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert > %s 2>&1',
+        escapeshellcmd($config['ruta_mysqldump']),
+        escapeshellarg($config['usuario']),
+        escapeshellarg($config['password']),
+        escapeshellarg($config['host']),
+        $config['port'],
+        escapeshellarg($config['database']),
+        escapeshellarg($rutaSQL)
+    );
 
     exec($comando, $output, $returnCode);
 
@@ -135,22 +122,9 @@ function generarRespaldo($config) {
         if (comprimirArchivo($rutaSQL, $rutaZip)) {
             unlink($rutaSQL);
             registrarAccionBitacora("Respaldo generado: " . basename($rutaZip));
-
-            // ==============================
-            // ✅ COPIA AUTOMÁTICA A USB (D:)
-            // ==============================
-            $rutaUSB = 'D:\\RespaldoAgroconsejos\\';
-            if (is_dir($rutaUSB)) {
-                if (!copy($rutaZip, $rutaUSB . basename($rutaZip))) {
-                    registrarAccionBitacora("⚠️ No se pudo copiar respaldo a la memoria USB (E:)");
-                } else {
-                    registrarAccionBitacora("✅ Copia adicional en memoria USB: " . $rutaUSB);
-                }
-            }
-
             echo json_encode([
                 'success' => true,
-                'message' => '✅ Respaldo generado y copiado exitosamente',
+                'message' => '✅ Respaldo generado exitosamente',
                 'archivo' => basename($rutaZip),
                 'tamaño' => formatoTamaño(filesize($rutaZip))
             ]);
@@ -165,118 +139,31 @@ function generarRespaldo($config) {
 }
 
 // ====================================
-// 🔹 Comprimir respaldo
-// ====================================
-function comprimirArchivo($archivoOrigen, $archivoDestino) {
-    $zip = new ZipArchive();
-    if ($zip->open($archivoDestino, ZipArchive::CREATE) === TRUE) {
-        $zip->addFile($archivoOrigen, basename($archivoOrigen));
-        $metadatos = [
-            'sistema' => 'AgroConsejos',
-            'fecha_respaldo' => date('Y-m-d H:i:s'),
-            'version_bd' => '1.0',
-            'tablas_incluidas' => 'Todas las tablas del sistema'
-        ];
-        $zip->addFromString('metadatos.json', json_encode($metadatos, JSON_PRETTY_PRINT));
-        $zip->close();
-        return true;
-    }
-    return false;
-}
-
-// ====================================
-// 🔹 Funciones auxiliares
-// ====================================
-function listarRespaldos() {
-    $dir = __DIR__ . "/backups/";
-    $archivos = glob($dir . "*.zip");
-    $lista = [];
-
-    foreach ($archivos as $archivo) {
-        $lista[] = [
-            'nombre' => basename($archivo),
-            'tamaño' => formatoTamaño(filesize($archivo)),
-            'fecha' => date("Y-m-d H:i:s", filemtime($archivo))
-        ];
-    }
-
-    echo json_encode(['success' => true, 'respaldos' => $lista]);
-}
-
-function formatoTamaño($bytes) {
-    $unidades = ['B', 'KB', 'MB', 'GB', 'TB'];
-    $i = 0;
-    while ($bytes >= 1024 && $i < count($unidades) - 1) {
-        $bytes /= 1024;
-        $i++;
-    }
-    return round($bytes, 2) . ' ' . $unidades[$i];
-}
-
-function eliminarDirectorio($dir) {
-    if (!is_dir($dir)) return;
-    $archivos = array_diff(scandir($dir), ['.', '..']);
-    foreach ($archivos as $archivo) {
-        $ruta = "$dir/$archivo";
-        if (is_dir($ruta)) eliminarDirectorio($ruta);
-        else unlink($ruta);
-    }
-    rmdir($dir);
-}
-
-function registrarAccionBitacora($accion) {
-    $log = __DIR__ . "/backups/bitacora.txt";
-    file_put_contents($log, "[" . date('Y-m-d H:i:s') . "] $accion\n", FILE_APPEND);
-}
-
-function eliminarRespaldo() {
-    if (!isset($_POST['archivo'])) {
-        echo json_encode(['success' => false, 'message' => 'No se especificó archivo a eliminar']);
-        return;
-    }
-    $archivo = __DIR__ . "/backups/" . basename($_POST['archivo']);
-    if (file_exists($archivo)) {
-        unlink($archivo);
-        registrarAccionBitacora("Respaldo eliminado: " . basename($archivo));
-        echo json_encode(['success' => true, 'message' => 'Archivo eliminado correctamente']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'El archivo no existe']);
-    }
-}
-// ====================================
 // 🔹 Restaurar respaldo
 // ====================================
 function restaurarRespaldo($config) {
-    // Verificar si se envió un archivo ZIP
     if (!isset($_FILES['archivo_respaldo']) || $_FILES['archivo_respaldo']['error'] !== UPLOAD_ERR_OK) {
         echo json_encode(['success' => false, 'message' => '❌ No se recibió archivo de respaldo válido']);
         return;
     }
 
-    // Crear carpeta temporal para restauración
-    $directorioTemp = __DIR__ . '/temp_restore/';
-    if (!is_dir($directorioTemp)) {
-        mkdir($directorioTemp, 0755, true);
-    }
+    $directorioTemp = _DIR_ . '/temp_restore/';
+    if (!is_dir($directorioTemp)) mkdir($directorioTemp, 0755, true);
 
-    // Guardar el archivo subido
     $archivoZip = $directorioTemp . basename($_FILES['archivo_respaldo']['name']);
     move_uploaded_file($_FILES['archivo_respaldo']['tmp_name'], $archivoZip);
 
-    // Verificar que el ZIP sea válido
     $zip = new ZipArchive();
     if ($zip->open($archivoZip) !== TRUE) {
         echo json_encode(['success' => false, 'message' => '❌ No se pudo abrir el archivo ZIP']);
         return;
     }
 
-    // Extraer contenido en carpeta temporal
     $carpetaExtraida = $directorioTemp . 'extraido_' . time() . '/';
     mkdir($carpetaExtraida, 0755, true);
     $zip->extractTo($carpetaExtraida);
     $zip->close();
 
-    // Buscar el archivo .sql dentro del ZIP
     $archivos = glob($carpetaExtraida . '*.sql');
     if (empty($archivos)) {
         echo json_encode(['success' => false, 'message' => '❌ El respaldo no contiene un archivo SQL válido']);
@@ -284,26 +171,21 @@ function restaurarRespaldo($config) {
         return;
     }
 
-    $archivoSQL = $archivos[0]; // Solo uno por respaldo
+    $archivoSQL = $archivos[0];
 
-    // Restaurar la base de datos
     $comando = sprintf(
-        '"%s" --user=%s %s --host=%s --port=%d %s < "%s" 2>&1',
-        $config['ruta_mysqldump'],
+        '%s --user=%s --password=%s --host=%s --port=%d %s < %s 2>&1',
+        escapeshellcmd($config['ruta_mysql']),
         escapeshellarg($config['usuario']),
-        empty($config['password']) ? '' : '--password=' . escapeshellarg($config['password']),
+        escapeshellarg($config['password']),
         escapeshellarg($config['host']),
         $config['port'],
         escapeshellarg($config['database']),
-        $archivoSQL
+        escapeshellarg($archivoSQL)
     );
-
-    // Cambiar comando a mysql.exe (no mysqldump)
-    $comando = str_replace('mysqldump', 'mysql', $comando);
 
     exec($comando, $output, $returnCode);
 
-    // Limpiar archivos temporales
     eliminarDirectorio($carpetaExtraida);
     unlink($archivoZip);
 
@@ -323,7 +205,68 @@ function restaurarRespaldo($config) {
     }
 }
 
+// ====================================
+// 🔹 Comprimir respaldo y funciones auxiliares
+// ====================================
+function comprimirArchivo($archivoOrigen, $archivoDestino) {
+    $zip = new ZipArchive();
+    if ($zip->open($archivoDestino, ZipArchive::CREATE) === TRUE) {
+        $zip->addFile($archivoOrigen, basename($archivoOrigen));
+        $zip->addFromString('metadatos.json', json_encode([
+            'sistema' => 'AgroConsejos',
+            'fecha_respaldo' => date('Y-m-d H:i:s'),
+            'version_bd' => '1.0',
+            'tablas_incluidas' => 'Todas las tablas del sistema'
+        ], JSON_PRETTY_PRINT));
+        $zip->close();
+        return true;
+    }
+    return false;
+}
 
+function listarRespaldos() {
+    $dir = _DIR_ . "/backups/";
+    $archivos = glob($dir . "*.zip");
+    $lista = [];
+    foreach ($archivos as $archivo) {
+        $lista[] = [
+            'nombre' => basename($archivo),
+            'tamaño' => formatoTamaño(filesize($archivo)),
+            'fecha' => date("Y-m-d H:i:s", filemtime($archivo))
+        ];
+    }
+    echo json_encode(['success' => true, 'respaldos' => $lista]);
+}
+
+function formatoTamaño($bytes) {
+    $unidades = ['B','KB','MB','GB','TB'];
+    $i = 0; while ($bytes >= 1024 && $i < count($unidades)-1) { $bytes /= 1024; $i++; }
+    return round($bytes,2).' '.$unidades[$i];
+}
+
+function eliminarDirectorio($dir) {
+    if (!is_dir($dir)) return;
+    $archivos = array_diff(scandir($dir), ['.','..']);
+    foreach ($archivos as $archivo) {
+        $ruta = "$dir/$archivo";
+        if (is_dir($ruta)) eliminarDirectorio($ruta);
+        else unlink($ruta);
+    }
+    rmdir($dir);
+}
+
+function registrarAccionBitacora($accion) {
+    $log = _DIR_ . "/backups/bitacora.txt";
+    file_put_contents($log,"[".date('Y-m-d H:i:s')."] $accion\n",FILE_APPEND);
+}
+
+function eliminarRespaldo() {
+    if (!isset($_POST['archivo'])) { echo json_encode(['success'=>false,'message'=>'No se especificó archivo a eliminar']); return; }
+    $archivo = _DIR_."/backups/".basename($_POST['archivo']);
+    if (file_exists($archivo)) {
+        unlink($archivo);
+        registrarAccionBitacora("Respaldo eliminado: ".basename($archivo));
+        echo json_encode(['success'=>true,'message'=>'Archivo eliminado correctamente']);
+    } else { echo json_encode(['success'=>false,'message'=>'El archivo no existe']); }
+}
 ?>
-
-
