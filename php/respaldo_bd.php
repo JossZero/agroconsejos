@@ -32,10 +32,10 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'administrad
 $config = [
     'host' => 'localhost',
     'port' => 3306,
-    'usuario' => 'root',
+    'usuario' => 'agroapp',
     'password' => '12345',
     'database' => 'agroconsejos',
-    'ruta_mysqldump' => 'C:\\xampp\\mysql\\bin\\mysqldump.exe'
+    'ruta_mysqldump' => '/usr/bin/mysqldump'
 ];
 
 $conexion = new Conexion();
