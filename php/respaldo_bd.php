@@ -30,14 +30,13 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'administrad
 // 🔧 CONFIGURACIÓN BASE DE DATOS
 // ============================
 $config = [
-    'host' => 'localhost',
-    'port' => 3306,
-    'usuario' => 'agroapp',
-    'password' => '12345',
-    'database' => 'agroconsejos',
-    // 🔹 Detectar automáticamente el binario correcto
-    'ruta_mysqldump' => file_exists('/usr/bin/mariadb-dump') ? '/usr/bin/mariadb-dump' : '/usr/bin/mysqldump',
-    'ruta_mysql' => '/usr/bin/mysql'
+    'host' => Config::DB_HOST,
+    'port' => Config::DB_PORT,
+    'usuario' => Config::DB_USER,
+    'password' => Config::DB_PASS,
+    'database' => Config::DB_NAME,
+    'ruta_mysqldump' => Config::getMysqldumpPath(),
+    'ruta_mysql' => (stripos(PHP_OS, 'WIN') === 0) ? 'C:\\xampp\\mysql\\bin\\mysql.exe' : '/usr/bin/mysql'
 ];
 
 $conexion = new Conexion();
@@ -94,13 +93,12 @@ function verificarMysqldump($config) {
 function generarRespaldo($config) {
     $fecha = date('Y-m-d_H-i-s');
     $nombreArchivo = "agroconsejos_respaldo_" . $fecha;
-    $directorioBackups = __DIR__ . "/backups/";
+    $directorioBackups = Config::BACKUP_PATH;
     $rutaSQL = $directorioBackups . $nombreArchivo . ".sql";
     $rutaZip = $directorioBackups . $nombreArchivo . ".zip";
 
     if (!is_dir($directorioBackups)) mkdir($directorioBackups, 0755, true);
 
-    // ✅ Usar --result-file en lugar de ">"
     $comando = sprintf(
         '%s --user=%s --password=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert --result-file=%s 2>&1',
         escapeshellcmd($config['ruta_mysqldump']),
@@ -169,7 +167,7 @@ function comprimirArchivo($archivoOrigen, $archivoDestino) {
 // 🔹 Funciones auxiliares
 // ====================================
 function listarRespaldos() {
-    $dir = __DIR__ . "/backups/";
+    $dir = Config::BACKUP_PATH;
     $archivos = glob($dir . "*.zip");
     $lista = [];
     foreach ($archivos as $archivo) {
@@ -200,18 +198,20 @@ function eliminarDirectorio($dir) {
 }
 
 function registrarAccionBitacora($accion) {
-    $log = __DIR__ . "/backups/bitacora.txt";
+    $log = Config::BACKUP_PATH . "bitacora.txt";
     file_put_contents($log,"[".date('Y-m-d H:i:s')."] $accion\n",FILE_APPEND);
 }
 
 function eliminarRespaldo() {
     if (!isset($_POST['archivo'])) { echo json_encode(['success'=>false,'message'=>'No se especificó archivo a eliminar']); return; }
-    $archivo = __DIR__."/backups/".basename($_POST['archivo']);
+    $archivo = Config::BACKUP_PATH . basename($_POST['archivo']);
     if (file_exists($archivo)) {
         unlink($archivo);
         registrarAccionBitacora("Respaldo eliminado: ".basename($archivo));
         echo json_encode(['success'=>true,'message'=>'Archivo eliminado correctamente']);
-    } else { echo json_encode(['success'=>false,'message'=>'El archivo no existe']); }
+    } else { 
+        echo json_encode(['success'=>false,'message'=>'El archivo no existe']); 
+    }
 }
 
 // 🔹 La función restaurarRespaldo se mantiene igual, no se toca.
