@@ -37,7 +37,7 @@ $config = [
     'usuario' => Config::DB_USER,
     'password' => Config::DB_PASS,
     'database' => Config::DB_NAME,
-    'ruta_mysqldump' => '/usr/bin/mysqldump', // Siempre en la Pi
+    'ruta_mysqldump' => '/usr/bin/mysqldump', // Forzar Linux
 ];
 
 // ============================
@@ -65,7 +65,7 @@ switch ($action) {
 // ====================================
 function listarRespaldos() {
     $dir = Config::BACKUP_PATH;
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    if (!is_dir($dir)) mkdir($dir, 0775, true);
 
     $archivos = glob($dir . "*.zip");
     $lista = [];
@@ -76,7 +76,7 @@ function listarRespaldos() {
             'fecha' => date("Y-m-d H:i:s", filemtime($archivo))
         ];
     }
-    echo json_encode(['success' => true, 'respaldos' => $lista]);
+    echo json_encode(['success' => true, 'data' => $lista]);
 }
 
 // ====================================
@@ -86,11 +86,12 @@ function generarRespaldo($config) {
     $fecha = date('Y-m-d_H-i-s');
     $nombreArchivo = "agroconsejos_respaldo_" . $fecha;
     $directorioBackups = Config::BACKUP_PATH;
+    if (!is_dir($directorioBackups)) mkdir($directorioBackups, 0775, true);
+
     $rutaSQL = $directorioBackups . $nombreArchivo . ".sql";
     $rutaZip = $directorioBackups . $nombreArchivo . ".zip";
 
-    if (!is_dir($directorioBackups)) mkdir($directorioBackups, 0755, true);
-
+    // Construir comando mysqldump
     $comando = sprintf(
         '%s --user=%s --password=%s --host=%s --port=%d %s --single-transaction --routines --triggers --events --add-drop-table --complete-insert --result-file=%s 2>&1',
         escapeshellcmd($config['ruta_mysqldump']),
@@ -124,36 +125,35 @@ function generarRespaldo($config) {
             'version_bd' => '1.0'
         ], JSON_PRETTY_PRINT));
         $zip->close();
-        unlink($rutaSQL); // borrar .sql
+        unlink($rutaSQL); // eliminar .sql después de comprimir
     } else {
         echo json_encode(['success' => false, 'message' => 'Error al crear ZIP']);
         return;
     }
 
-    // Descargar ZIP
-    if (file_exists($rutaZip)) {
-        header('Content-Type: application/zip');
-        header('Content-Disposition: attachment; filename="' . basename($rutaZip) . '"');
-        header('Content-Length: ' . filesize($rutaZip));
-        readfile($rutaZip);
-        unlink($rutaZip); // borrar después de descargar
-        exit;
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Archivo ZIP no encontrado']);
-    }
+    // Retornar éxito (la web puede descargarlo opcionalmente)
+    echo json_encode([
+        'success' => true,
+        'message' => '✅ Respaldo generado correctamente',
+        'archivo' => basename($rutaZip)
+    ]);
 }
 
 // ====================================
 // 🔹 Eliminar respaldo
 // ====================================
 function eliminarRespaldo() {
-    if (!isset($_POST['archivo'])) { echo json_encode(['success'=>false,'message'=>'No se especificó archivo a eliminar']); return; }
+    if (!isset($_POST['archivo'])) {
+        echo json_encode(['success' => false, 'message' => 'No se especificó archivo a eliminar']);
+        return;
+    }
+
     $archivo = Config::BACKUP_PATH . basename($_POST['archivo']);
     if (file_exists($archivo)) {
         unlink($archivo);
-        echo json_encode(['success'=>true,'message'=>'Archivo eliminado correctamente']);
-    } else { 
-        echo json_encode(['success'=>false,'message'=>'El archivo no existe']); 
+        echo json_encode(['success' => true, 'message' => 'Archivo eliminado correctamente']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'El archivo no existe']);
     }
 }
 
@@ -162,7 +162,8 @@ function eliminarRespaldo() {
 // ====================================
 function formatoTamaño($bytes) {
     $unidades = ['B','KB','MB','GB','TB'];
-    $i = 0; while ($bytes >= 1024 && $i < count($unidades)-1) { $bytes /= 1024; $i++; }
+    $i = 0;
+    while ($bytes >= 1024 && $i < count($unidades)-1) { $bytes /= 1024; $i++; }
     return round($bytes,2).' '.$unidades[$i];
 }
 ?>
