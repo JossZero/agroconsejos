@@ -1,6 +1,6 @@
 <?php
 // ============================
-// 🌿 AGROCONSEJOS - RESPALDO BD (Linux/Windows)
+// 🌿 AGROCONSEJOS - RESPALDO BD (Multiusuario Web)
 // ============================
 
 error_reporting(E_ALL);
@@ -14,9 +14,11 @@ if (!file_exists($rutaConexion)) {
 }
 require_once $rutaConexion;
 
-if (file_exists(__DIR__ . '/config.php')) {
-    require_once __DIR__ . '/config.php';
+if (!file_exists(__DIR__ . '/config.php')) {
+    echo json_encode(['success' => false, 'message' => 'Error: Archivo config.php no encontrado']);
+    exit;
 }
+require_once __DIR__ . '/config.php';
 
 session_start();
 
@@ -35,13 +37,12 @@ $config = [
     'usuario' => Config::DB_USER,
     'password' => Config::DB_PASS,
     'database' => Config::DB_NAME,
-    'ruta_mysqldump' => Config::getMysqldumpPath(),
-    'ruta_mysql' => (stripos(PHP_OS, 'WIN') === 0) ? 'C:\\xampp\\mysql\\bin\\mysql.exe' : '/usr/bin/mysql'
+    'ruta_mysqldump' => '/usr/bin/mysqldump', // Siempre en la Pi
 ];
 
-$conexion = new Conexion();
-$conn = $conexion->getConexion();
-
+// ============================
+// 🔹 Acción
+// ============================
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $method === 'POST' ? ($_POST['action'] ?? '') : ($_GET['action'] ?? '');
 
@@ -49,14 +50,8 @@ switch ($action) {
     case 'listar_respaldos':
         listarRespaldos();
         break;
-    case 'verificar_mysqldump':
-        verificarMysqldump($config);
-        break;
     case 'generar_respaldo':
         generarRespaldo($config);
-        break;
-    case 'restaurar_respaldo':
-        restaurarRespaldo($config);
         break;
     case 'eliminar_respaldo':
         eliminarRespaldo();
@@ -66,29 +61,26 @@ switch ($action) {
 }
 
 // ====================================
-// 🔹 Verificar mysqldump disponible
+// 🔹 Listar respaldos existentes
 // ====================================
-function verificarMysqldump($config) {
-    $comando = escapeshellcmd($config['ruta_mysqldump']) . " --version 2>&1";
-    exec($comando, $output, $returnCode);
+function listarRespaldos() {
+    $dir = Config::BACKUP_PATH;
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-    if ($returnCode === 0) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'mysqldump disponible: ' . implode(' ', $output),
-            'version' => $output[0] ?? 'Desconocida'
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'mysqldump no encontrado. Asegúrate de que MySQL/MariaDB esté instalado correctamente.',
-            'error' => implode(', ', $output)
-        ]);
+    $archivos = glob($dir . "*.zip");
+    $lista = [];
+    foreach ($archivos as $archivo) {
+        $lista[] = [
+            'nombre' => basename($archivo),
+            'tamaño' => formatoTamaño(filesize($archivo)),
+            'fecha' => date("Y-m-d H:i:s", filemtime($archivo))
+        ];
     }
+    echo json_encode(['success' => true, 'respaldos' => $lista]);
 }
 
 // ====================================
-// 🔹 Generar respaldo y enviar descarga
+// 🔹 Generar respaldo y descargar
 // ====================================
 function generarRespaldo($config) {
     $fecha = date('Y-m-d_H-i-s');
@@ -112,107 +104,65 @@ function generarRespaldo($config) {
 
     exec($comando, $output, $returnCode);
 
-    if ($returnCode !== 0) {
+    if ($returnCode !== 0 || !file_exists($rutaSQL)) {
         echo json_encode([
             'success' => false,
-            'message' => '❌ Error en mysqldump',
+            'message' => '❌ Error al generar respaldo',
             'comando' => $comando,
             'output' => $output
         ]);
-        exit;
+        return;
     }
 
-    if (file_exists($rutaSQL) && filesize($rutaSQL) > 0) {
-        if (comprimirArchivo($rutaSQL, $rutaZip)) {
-            unlink($rutaSQL);
-            registrarAccionBitacora("Respaldo generado: " . basename($rutaZip));
-
-            header('Content-Type: application/zip');
-            header('Content-Disposition: attachment; filename="' . basename($rutaZip) . '"');
-            header('Content-Length: ' . filesize($rutaZip));
-            readfile($rutaZip);
-
-            unlink($rutaZip);
-            exit;
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Error al comprimir respaldo']);
-        }
-    } else {
-        $errorMsg = implode(', ', $output);
-        if (file_exists($rutaSQL)) unlink($rutaSQL);
-        echo json_encode(['success' => false, 'message' => '❌ Error al generar respaldo: ' . $errorMsg]);
-    }
-}
-
-// ====================================
-// 🔹 Comprimir respaldo
-// ====================================
-function comprimirArchivo($archivoOrigen, $archivoDestino) {
+    // Comprimir SQL en ZIP
     $zip = new ZipArchive();
-    if ($zip->open($archivoDestino, ZipArchive::CREATE) === TRUE) {
-        $zip->addFile($archivoOrigen, basename($archivoOrigen));
+    if ($zip->open($rutaZip, ZipArchive::CREATE) === TRUE) {
+        $zip->addFile($rutaSQL, basename($rutaSQL));
         $zip->addFromString('metadatos.json', json_encode([
             'sistema' => 'AgroConsejos',
             'fecha_respaldo' => date('Y-m-d H:i:s'),
-            'version_bd' => '1.0',
-            'tablas_incluidas' => 'Todas las tablas del sistema'
+            'version_bd' => '1.0'
         ], JSON_PRETTY_PRINT));
         $zip->close();
-        return true;
+        unlink($rutaSQL); // borrar .sql
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Error al crear ZIP']);
+        return;
     }
-    return false;
+
+    // Descargar ZIP
+    if (file_exists($rutaZip)) {
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename="' . basename($rutaZip) . '"');
+        header('Content-Length: ' . filesize($rutaZip));
+        readfile($rutaZip);
+        unlink($rutaZip); // borrar después de descargar
+        exit;
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Archivo ZIP no encontrado']);
+    }
 }
 
 // ====================================
-// 🔹 Funciones auxiliares
+// 🔹 Eliminar respaldo
 // ====================================
-function listarRespaldos() {
-    $dir = Config::BACKUP_PATH;
-    $archivos = glob($dir . "*.zip");
-    $lista = [];
-    foreach ($archivos as $archivo) {
-        $lista[] = [
-            'nombre' => basename($archivo),
-            'tamaño' => formatoTamaño(filesize($archivo)),
-            'fecha' => date("Y-m-d H:i:s", filemtime($archivo))
-        ];
-    }
-    echo json_encode(['success' => true, 'respaldos' => $lista]);
-}
-
-function formatoTamaño($bytes) {
-    $unidades = ['B','KB','MB','GB','TB'];
-    $i = 0; while ($bytes >= 1024 && $i < count($unidades)-1) { $bytes /= 1024; $i++; }
-    return round($bytes,2).' '.$unidades[$i];
-}
-
-function eliminarDirectorio($dir) {
-    if (!is_dir($dir)) return;
-    $archivos = array_diff(scandir($dir), ['.','..']);
-    foreach ($archivos as $archivo) {
-        $ruta = "$dir/$archivo";
-        if (is_dir($ruta)) eliminarDirectorio($ruta);
-        else unlink($ruta);
-    }
-    rmdir($dir);
-}
-
-function registrarAccionBitacora($accion) {
-    $log = Config::BACKUP_PATH . "bitacora.txt";
-    file_put_contents($log,"[".date('Y-m-d H:i:s')."] $accion\n",FILE_APPEND);
-}
-
 function eliminarRespaldo() {
     if (!isset($_POST['archivo'])) { echo json_encode(['success'=>false,'message'=>'No se especificó archivo a eliminar']); return; }
     $archivo = Config::BACKUP_PATH . basename($_POST['archivo']);
     if (file_exists($archivo)) {
         unlink($archivo);
-        registrarAccionBitacora("Respaldo eliminado: ".basename($archivo));
         echo json_encode(['success'=>true,'message'=>'Archivo eliminado correctamente']);
     } else { 
         echo json_encode(['success'=>false,'message'=>'El archivo no existe']); 
     }
 }
 
-// 🔹 La función restaurarRespaldo se mantiene igual, no se toca.
+// ====================================
+// 🔹 Funciones auxiliares
+// ====================================
+function formatoTamaño($bytes) {
+    $unidades = ['B','KB','MB','GB','TB'];
+    $i = 0; while ($bytes >= 1024 && $i < count($unidades)-1) { $bytes /= 1024; $i++; }
+    return round($bytes,2).' '.$unidades[$i];
+}
 ?>
