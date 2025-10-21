@@ -19,8 +19,9 @@ class Config {
     const SMTP_FROM_NAME = 'AgroConsejos';
     
     // --- Rutas del sistema ---
-    const BACKUP_PATH = __DIR__ . '/../backups/';
-    const TEMP_PATH = __DIR__ . '/../temp/';
+    // Ajustamos BACKUP_PATH para que sea siempre dentro de php/backups
+    const BACKUP_PATH = __DIR__ . '/backups/';
+    const TEMP_PATH = __DIR__ . '/temp/';
     
     // --- Configuración de respaldos ---
     const MAX_BACKUP_SIZE = 500; // MB
@@ -52,10 +53,16 @@ function verificarRequisitosSistema() {
         }
     }
 
-    if (!is_writable(Config::BACKUP_PATH)) {
+    // Verifica que los directorios existan y tengan permisos
+    if (!is_dir(Config::BACKUP_PATH) && !mkdir(Config::BACKUP_PATH, 0755, true)) {
+        $errores[] = "No se pudo crear el directorio de backups: " . Config::BACKUP_PATH;
+    } elseif (!is_writable(Config::BACKUP_PATH)) {
         $errores[] = "El directorio de backups no tiene permisos de escritura.";
     }
-    if (!is_writable(Config::TEMP_PATH)) {
+
+    if (!is_dir(Config::TEMP_PATH) && !mkdir(Config::TEMP_PATH, 0755, true)) {
+        $errores[] = "No se pudo crear el directorio temporal: " . Config::TEMP_PATH;
+    } elseif (!is_writable(Config::TEMP_PATH)) {
         $errores[] = "El directorio temporal no tiene permisos de escritura.";
     }
 
@@ -75,7 +82,8 @@ function obtenerInfoSistema() {
         'memoria_limite' => ini_get('memory_limit'),
         'tiempo_maximo_ejecucion' => ini_get('max_execution_time'),
         'tamano_maximo_upload' => ini_get('upload_max_filesize'),
-        'ruta_mysqldump' => Config::getMysqldumpPath()
+        'ruta_mysqldump' => Config::getMysqldumpPath(),
+        'backup_path' => Config::BACKUP_PATH
     ];
 }
 
